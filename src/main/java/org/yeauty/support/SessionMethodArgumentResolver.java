@@ -14,7 +14,6 @@ public class SessionMethodArgumentResolver implements MethodArgumentResolver {
 
     @Override
     public Object resolveArgument(MethodParameter parameter, Channel channel, Object object) throws Exception {
-        Session session = channel.attr(SESSION_KEY).get();
-        return session;
+        return channel.attr(SESSION_KEY).get();
     }
 }

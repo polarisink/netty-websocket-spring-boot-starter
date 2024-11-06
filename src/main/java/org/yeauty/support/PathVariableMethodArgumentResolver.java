@@ -10,9 +10,10 @@ import java.util.Map;
 
 import static org.yeauty.pojo.PojoEndpointServer.URI_TEMPLATE;
 
+
 public class PathVariableMethodArgumentResolver implements MethodArgumentResolver {
 
-    private AbstractBeanFactory beanFactory;
+    private final AbstractBeanFactory beanFactory;
 
     public PathVariableMethodArgumentResolver(AbstractBeanFactory beanFactory) {
         this.beanFactory = beanFactory;

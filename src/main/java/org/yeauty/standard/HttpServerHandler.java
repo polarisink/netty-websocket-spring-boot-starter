@@ -73,7 +73,7 @@ class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
                     return ByteBufAllocator.DEFAULT.buffer(bytes.length).writeBytes(bytes);
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         }
         return null;
     }
@@ -181,7 +181,7 @@ class HttpServerHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
         Set<WsPathMatcher> pathMatcherSet = pojoEndpointServer.getPathMatcherSet();
         for (WsPathMatcher pathMatcher : pathMatcherSet) {
             if (pathMatcher.matchAndExtract(decoder, channel)) {
-                pattern = pathMatcher.getPattern();
+                pattern = pathMatcher.pattern();
                 break;
             }
         }

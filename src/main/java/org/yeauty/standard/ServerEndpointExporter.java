@@ -81,17 +81,14 @@ public class ServerEndpointExporter extends ApplicationObjectSupport implements 
 
     private void scanPackage(ApplicationContext context) {
         String[] basePackages = null;
-
         String[] enableWebSocketBeanNames = context.getBeanNamesForAnnotation(EnableWebSocket.class);
-        if (enableWebSocketBeanNames.length != 0) {
-            for (String enableWebSocketBeanName : enableWebSocketBeanNames) {
-                Object enableWebSocketBean = context.getBean(enableWebSocketBeanName);
-                EnableWebSocket enableWebSocket = AnnotationUtils.findAnnotation(enableWebSocketBean.getClass(), EnableWebSocket.class);
-                assert enableWebSocket != null;
-                if (enableWebSocket.scanBasePackages().length != 0) {
-                    basePackages = enableWebSocket.scanBasePackages();
-                    break;
-                }
+        for (String enableWebSocketBeanName : enableWebSocketBeanNames) {
+            Object enableWebSocketBean = context.getBean(enableWebSocketBeanName);
+            EnableWebSocket enableWebSocket = AnnotationUtils.findAnnotation(enableWebSocketBean.getClass(), EnableWebSocket.class);
+            assert enableWebSocket != null;
+            if (enableWebSocket.scanBasePackages().length != 0) {
+                basePackages = enableWebSocket.scanBasePackages();
+                break;
             }
         }
 
@@ -127,7 +124,7 @@ public class ServerEndpointExporter extends ApplicationObjectSupport implements 
                 websocketServer.init();
                 PojoEndpointServer pojoEndpointServer = websocketServer.getPojoEndpointServer();
                 StringJoiner stringJoiner = new StringJoiner(",");
-                pojoEndpointServer.getPathMatcherSet().forEach(pathMatcher -> stringJoiner.add("'" + pathMatcher.getPattern() + "'"));
+                pojoEndpointServer.getPathMatcherSet().forEach(pathMatcher -> stringJoiner.add("'" + pathMatcher.pattern() + "'"));
                 logger.info(String.format("\033[34mNetty WebSocket started on port: %s with context path(s): %s .\033[0m", pojoEndpointServer.getPort(), stringJoiner.toString()));
             } catch (InterruptedException e) {
                 logger.error(String.format("websocket [%s] init fail", entry.getKey()), e);
@@ -212,7 +209,7 @@ public class ServerEndpointExporter extends ApplicationObjectSupport implements 
         }
         Boolean corsAllowCredentials = resolveAnnotationValue(annotation.corsAllowCredentials(), Boolean.class, "corsAllowCredentials");
 
-        ServerEndpointConfig serverEndpointConfig = new ServerEndpointConfig(host, port, bossLoopGroupThreads, workerLoopGroupThreads
+        return new ServerEndpointConfig(host, port, bossLoopGroupThreads, workerLoopGroupThreads
                 , useCompressionHandler, optionConnectTimeoutMillis, optionSoBacklog, childOptionWriteSpinCount, childOptionWriteBufferHighWaterMark
                 , childOptionWriteBufferLowWaterMark, childOptionSoRcvbuf, childOptionSoSndbuf, childOptionTcpNodelay, childOptionSoKeepalive
                 , childOptionSoLinger, childOptionAllowHalfClosure, readerIdleTimeSeconds, writerIdleTimeSeconds, allIdleTimeSeconds
@@ -220,8 +217,6 @@ public class ServerEndpointExporter extends ApplicationObjectSupport implements 
                 , sslKeyPassword, sslKeyStore, sslKeyStorePassword, sslKeyStoreType
                 , sslTrustStore, sslTrustStorePassword, sslTrustStoreType
                 , corsOrigins, corsAllowCredentials);
-
-        return serverEndpointConfig;
     }
 
     private <T> T resolveAnnotationValue(Object value, Class<T> requiredType, String paramName) {

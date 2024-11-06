@@ -15,7 +15,7 @@ import static org.yeauty.pojo.PojoEndpointServer.REQUEST_PARAM;
 
 public class RequestParamMethodArgumentResolver implements MethodArgumentResolver {
 
-    private AbstractBeanFactory beanFactory;
+    private final AbstractBeanFactory beanFactory;
 
     public RequestParamMethodArgumentResolver(AbstractBeanFactory beanFactory) {
         this.beanFactory = beanFactory;

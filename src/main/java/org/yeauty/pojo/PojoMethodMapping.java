@@ -4,7 +4,7 @@ import io.netty.channel.Channel;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.AbstractBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
@@ -76,7 +76,7 @@ public class PojoMethodMapping {
                         handshake = method;
                     } else {
                         if (currentClazz == pojoClazz ||
-                                !isMethodOverride(handshake, method)) {
+                            !isMethodOverride(handshake, method)) {
                             // Duplicate annotation
                             throw new DeploymentException(
                                     "pojoMethodMapping.duplicateAnnotation BeforeHandshake");
@@ -88,7 +88,7 @@ public class PojoMethodMapping {
                         open = method;
                     } else {
                         if (currentClazz == pojoClazz ||
-                                !isMethodOverride(open, method)) {
+                            !isMethodOverride(open, method)) {
                             // Duplicate annotation
                             throw new DeploymentException(
                                     "pojoMethodMapping.duplicateAnnotation OnOpen");
@@ -100,7 +100,7 @@ public class PojoMethodMapping {
                         close = method;
                     } else {
                         if (currentClazz == pojoClazz ||
-                                !isMethodOverride(close, method)) {
+                            !isMethodOverride(close, method)) {
                             // Duplicate annotation
                             throw new DeploymentException(
                                     "pojoMethodMapping.duplicateAnnotation OnClose");
@@ -112,7 +112,7 @@ public class PojoMethodMapping {
                         error = method;
                     } else {
                         if (currentClazz == pojoClazz ||
-                                !isMethodOverride(error, method)) {
+                            !isMethodOverride(error, method)) {
                             // Duplicate annotation
                             throw new DeploymentException(
                                     "pojoMethodMapping.duplicateAnnotation OnError");
@@ -124,7 +124,7 @@ public class PojoMethodMapping {
                         message = method;
                     } else {
                         if (currentClazz == pojoClazz ||
-                                !isMethodOverride(message, method)) {
+                            !isMethodOverride(message, method)) {
                             // Duplicate annotation
                             throw new DeploymentException(
                                     "pojoMethodMapping.duplicateAnnotation onMessage");
@@ -136,7 +136,7 @@ public class PojoMethodMapping {
                         binary = method;
                     } else {
                         if (currentClazz == pojoClazz ||
-                                !isMethodOverride(binary, method)) {
+                            !isMethodOverride(binary, method)) {
                             // Duplicate annotation
                             throw new DeploymentException(
                                     "pojoMethodMapping.duplicateAnnotation OnBinary");
@@ -148,7 +148,7 @@ public class PojoMethodMapping {
                         event = method;
                     } else {
                         if (currentClazz == pojoClazz ||
-                                !isMethodOverride(event, method)) {
+                            !isMethodOverride(event, method)) {
                             // Duplicate annotation
                             throw new DeploymentException(
                                     "pojoMethodMapping.duplicateAnnotation OnEvent");
@@ -163,37 +163,37 @@ public class PojoMethodMapping {
         // If the methods are not on pojoClazz and they are overridden
         // by a non annotated method in pojoClazz, they should be ignored
         if (handshake != null && handshake.getDeclaringClass() != pojoClazz) {
-            if (isOverridenWithoutAnnotation(pojoClazzMethods, handshake, BeforeHandshake.class)) {
+            if (isOverrideWithoutAnnotation(pojoClazzMethods, handshake, BeforeHandshake.class)) {
                 handshake = null;
             }
         }
         if (open != null && open.getDeclaringClass() != pojoClazz) {
-            if (isOverridenWithoutAnnotation(pojoClazzMethods, open, OnOpen.class)) {
+            if (isOverrideWithoutAnnotation(pojoClazzMethods, open, OnOpen.class)) {
                 open = null;
             }
         }
         if (close != null && close.getDeclaringClass() != pojoClazz) {
-            if (isOverridenWithoutAnnotation(pojoClazzMethods, close, OnClose.class)) {
+            if (isOverrideWithoutAnnotation(pojoClazzMethods, close, OnClose.class)) {
                 close = null;
             }
         }
         if (error != null && error.getDeclaringClass() != pojoClazz) {
-            if (isOverridenWithoutAnnotation(pojoClazzMethods, error, OnError.class)) {
+            if (isOverrideWithoutAnnotation(pojoClazzMethods, error, OnError.class)) {
                 error = null;
             }
         }
         if (message != null && message.getDeclaringClass() != pojoClazz) {
-            if (isOverridenWithoutAnnotation(pojoClazzMethods, message, OnMessage.class)) {
+            if (isOverrideWithoutAnnotation(pojoClazzMethods, message, OnMessage.class)) {
                 message = null;
             }
         }
         if (binary != null && binary.getDeclaringClass() != pojoClazz) {
-            if (isOverridenWithoutAnnotation(pojoClazzMethods, binary, OnBinary.class)) {
+            if (isOverrideWithoutAnnotation(pojoClazzMethods, binary, OnBinary.class)) {
                 binary = null;
             }
         }
         if (event != null && event.getDeclaringClass() != pojoClazz) {
-            if (isOverridenWithoutAnnotation(pojoClazzMethods, event, OnEvent.class)) {
+            if (isOverrideWithoutAnnotation(pojoClazzMethods, event, OnEvent.class)) {
                 event = null;
             }
         }
@@ -234,20 +234,30 @@ public class PojoMethodMapping {
                 && Arrays.equals(method1.getParameterTypes(), method2.getParameterTypes()));
     }
 
-    private boolean isOverridenWithoutAnnotation(Method[] methods, Method superclazzMethod, Class<? extends Annotation> annotation) {
+    private boolean isOverrideWithoutAnnotation(Method[] methods, Method superclazzMethod, Class<? extends Annotation> annotation) {
         for (Method method : methods) {
             if (isMethodOverride(method, superclazzMethod)
-                    && (method.getAnnotation(annotation) == null)) {
+                && (method.getAnnotation(annotation) == null)) {
                 return true;
             }
         }
         return false;
     }
 
-    Object getEndpointInstance() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+   /* Object getEndpointInstance() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
         Object implement = pojoClazz.getDeclaredConstructor().newInstance();
         AutowiredAnnotationBeanPostProcessor postProcessor = applicationContext.getBean(AutowiredAnnotationBeanPostProcessor.class);
+        postProcessor.postProcessProperties()
         postProcessor.postProcessPropertyValues(null, null, implement, null);
+        return implement;
+    }*/
+
+    Object getEndpointInstance() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Object implement = pojoClazz.getDeclaredConstructor().newInstance();
+        // AutowiredAnnotationBeanPostProcessor postProcessor = applicationContext.getBean(AutowiredAnnotationBeanPostProcessor.class);
+        // postProcessor.postProcessPropertyValues(null, null, implement, null);
+        AutowireCapableBeanFactory beanFactory = applicationContext.getAutowireCapableBeanFactory();
+        beanFactory.autowireBean(implement);
         return implement;
     }
 

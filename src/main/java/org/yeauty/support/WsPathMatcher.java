@@ -6,7 +6,7 @@ import io.netty.handler.codec.http.QueryStringDecoder;
 
 public interface WsPathMatcher {
 
-    String getPattern();
+    String pattern();
 
     boolean matchAndExtract(QueryStringDecoder decoder, Channel channel);
 }
